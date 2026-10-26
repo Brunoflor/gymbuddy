@@ -1,8 +1,8 @@
-# 🧬 Biologym
+# 💪 GymBuddy
 
 **A personal training management platform for coaches and their athletes.**
 
-Biologym brings everything a personal trainer needs into one place: clients' diets, body measurements and training plans, with a dedicated experience for each side of the relationship.
+GymBuddy brings everything a personal trainer needs into one place: clients' diets, body measurements and training plans, with a dedicated experience for each side of the relationship.
 
 ## Two sides, one platform
 
