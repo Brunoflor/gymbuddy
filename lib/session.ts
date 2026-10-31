@@ -1,6 +1,6 @@
 import "server-only";
 import { redirect } from "next/navigation";
-import { destinationForAccount, type MembershipStatus, type Role } from "@/lib/domain";
+import { destinationForAccount, pathAfterEntry, type MembershipStatus, type Role } from "@/lib/domain";
 import { createClient } from "@/lib/supabase/server";
 
 export type Account = {
@@ -75,14 +75,13 @@ export async function requireAccount(): Promise<Account> {
 
 export async function requireCoach(): Promise<Account> {
   const account = await requireAccount();
-  if (account.role !== "coach") redirect(destinationForAccount(account));
+  if (account.role !== "coach") redirect(pathAfterEntry("coach", account));
   return account;
 }
 
 export async function requireApprovedAthlete(): Promise<Account> {
   const account = await requireAccount();
-  if (account.role !== "athlete" || account.status !== "approved") {
-    redirect(destinationForAccount(account));
-  }
+  if (account.role === "coach") redirect(pathAfterEntry("athlete", account));
+  if (account.status !== "approved") redirect(destinationForAccount(account));
   return account;
 }

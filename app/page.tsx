@@ -10,25 +10,19 @@ export default function HomePage() {
           {it.landing.title}
         </h1>
         <p className="mt-4 max-w-xl text-base leading-7 text-muted">{it.landing.lead}</p>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/accedi" className="rounded-full bg-pine px-5 py-3 text-sm font-semibold text-white">
-            {it.landing.signIn}
+        <div className="mt-8 grid gap-3 sm:grid-cols-2">
+          <Link href="/coach" className="rounded-3xl bg-pine p-5 text-white">
+            <p className="text-xs uppercase tracking-[0.16em] text-white/70">{it.landing.coachEntry}</p>
+            <h2 className="mt-3 font-display text-3xl">{it.landing.openCoach}</h2>
+            <p className="mt-2 text-sm leading-6 text-white/80">{it.landing.coachCardLead}</p>
           </Link>
-          <Link href="/registrati" className="rounded-full border border-line bg-card px-5 py-3 text-sm font-semibold">
-            {it.landing.registerCoach}
+          <Link href="/atleta" className="rounded-3xl border border-line bg-card p-5">
+            <p className="text-xs uppercase tracking-[0.16em] text-ember">{it.landing.athleteEntry}</p>
+            <h2 className="mt-3 font-display text-3xl">{it.landing.openAthlete}</h2>
+            <p className="mt-2 text-sm leading-6 text-muted">{it.landing.athleteCardLead}</p>
           </Link>
         </div>
         <p className="mt-4 max-w-md text-sm text-muted">{it.landing.haveCode}</p>
-        <div className="mt-8 grid gap-3 sm:grid-cols-2">
-          <article className="rounded-3xl border border-line bg-card p-4">
-            <h2 className="font-display text-2xl">{it.landing.coachTitle}</h2>
-            <p className="mt-2 text-sm leading-6 text-muted">{it.landing.coachBody}</p>
-          </article>
-          <article className="rounded-3xl border border-line bg-card p-4">
-            <h2 className="font-display text-2xl">{it.landing.athleteTitle}</h2>
-            <p className="mt-2 text-sm leading-6 text-muted">{it.landing.athleteBody}</p>
-          </article>
-        </div>
       </div>
       <aside className="rounded-[2rem] bg-pine p-5 text-white shadow-xl">
         <p className="text-xs uppercase tracking-[0.16em] text-white/60">{it.appName}</p>

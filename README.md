@@ -60,9 +60,16 @@ Local only. Password for every account: `GymBuddy-demo-1`
 | luca@gymbuddy.local | Waiting for approval |
 | marco@gymbuddy.local | Second coach, invite code `MARCO002`, used to prove isolation |
 
-Athlete signup link for Bruno: http://127.0.0.1:3000/iscriviti/BRUNO001
+Two doors, locally and in production (`https://gymbuddy-olive.vercel.app`):
 
-The coach registration code stored in this local database is `gymbuddy-coach-local`. It is required on `/registrati` and is not the same thing as an athlete invite code.
+| Who | Path |
+| --- | --- |
+| Coach | `/coach` |
+| Athlete | `/atleta` |
+
+Share `/atleta` with clients who already have an account. New athletes still register through the coach's invite link, for Bruno: http://127.0.0.1:3000/iscriviti/BRUNO001
+
+The coach registration code stored in this local database is `gymbuddy-coach-local`. It is required on `/coach/registrati` and is not the same thing as an athlete invite code. `/registrati` redirects there. `/accedi` only asks which door to use.
 
 Mailpit (local auth emails) is at http://127.0.0.1:54324. Email confirmation is off in the local stack.
 
@@ -95,7 +102,7 @@ where key = 'coach_signup_code';
 
 5. In Authentication → URL configuration, set Site URL to the Vercel domain and add `https://<your-app>.vercel.app` to the redirect allow list.
 6. Turn on email confirmations and configure custom SMTP before real users sign up. The built-in Supabase mailer is only for early experiments.
-7. Register the first coach at `/registrati` with that secret, then share the invite link from the coach home screen.
+7. Register the first coach at `/coach/registrati` with that secret. Share `/coach` only with coaches and `/atleta` with clients. New athletes still join through `/iscriviti/<code>` from the coach home screen.
 
 Storage bucket `athlete-files` is created by the migration (private progress photos). You do not need to create it by hand.
 
@@ -111,11 +118,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon or publishable key>
 
 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` is accepted if the project uses the newer key name instead of the anon key. Leave `NEXT_PUBLIC_DEMO_HINTS` unset in production so the sign-in screen does not list demo accounts.
 
-3. Deploy. After the first coach exists, athletes join only through `/iscriviti/<code>`. They stay on the waiting screen until that coach approves them.
+3. Deploy. The live doors are `/coach` and `/atleta`. After the first coach exists, new athletes join through `/iscriviti/<code>` and stay on the waiting screen until that coach approves them. A coach who signs in on `/atleta` (or an athlete on `/coach`) is sent to their own area with a short explanation.
 
 ## What is in v1
 
-- Coach and athlete sign-up, sign-in, sign-out
+- Separate coach door (`/coach`) and athlete door (`/atleta`), plus invite-code signup
 - Personal invite code and link; athletes start as `pending`
 - Approve, reject, or put a request back to waiting
 - Diet plans and workout cards (days, exercises, sets, reps, rest, notes), including previous versions kept in the database
@@ -124,8 +131,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon or publishable key>
 
 ## Still for the owner
 
-- Create the hosted Supabase project and the Vercel project (there are no credentials in this repo)
-- Choose the production coach registration secret and create the real coach account
+- Set the production coach registration secret, then create the real coach account at `/coach/registrati`
+- Share `/coach` with coaches and `/atleta` with clients. New athletes still need `/iscriviti/<code>`
 - Configure production email (SMTP) and confirmations
 - Decide whether rejected athletes may reapply with another email; v1 keeps a single membership per athlete and lets the coach move it back to waiting
 - A future native app can use the same Supabase project. No schema rewrite is required to add coaches
