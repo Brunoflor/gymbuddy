@@ -9,7 +9,7 @@ export default async function AthleteLayout({ children }: { children: ReactNode 
   return (
     <>
       <Frame bottomNav>
-        <TopBar name={account.fullName} href="/atleta" />
+        <TopBar name={account.fullName} href="/atleta" returnTo="/atleta" />
         {children}
       </Frame>
       <AthleteNav />

@@ -106,6 +106,8 @@ export function emptyWorkout(): WorkoutContent {
   };
 }
 
+export type Door = "coach" | "athlete";
+
 export function destinationForAccount(input: {
   role: Role;
   status: MembershipStatus | null;
@@ -114,6 +116,41 @@ export function destinationForAccount(input: {
   if (input.status === "approved") return "/atleta";
   if (input.status === "rejected") return "/non-approvato";
   return "/in-attesa";
+}
+
+/** Where to send someone after they use a specific door. A mismatch keeps them out of the wrong area and explains the hop. */
+export function pathAfterEntry(
+  door: Door,
+  account: { role: Role; status: MembershipStatus | null },
+): string {
+  const home = destinationForAccount(account);
+  const wrongDoor =
+    (door === "coach" && account.role !== "coach") ||
+    (door === "athlete" && account.role !== "athlete");
+  if (!wrongDoor) return home;
+  const joiner = home.includes("?") ? "&" : "?";
+  const usedDoor = door === "athlete" ? "atleta" : "coach";
+  return `${home}${joiner}ingresso=${usedDoor}`;
+}
+
+const privatePrefixes = [
+  "/coach/atleti",
+  "/atleta/dieta",
+  "/atleta/allenamento",
+  "/atleta/progressi",
+  "/in-attesa",
+  "/non-approvato",
+];
+
+export function isPrivateAppPath(pathname: string): boolean {
+  return privatePrefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
+
+export function entryPathFor(pathname: string): "/coach" | "/atleta" {
+  if (pathname === "/coach" || pathname.startsWith("/coach/")) return "/coach";
+  return "/atleta";
 }
 
 export function translateAuthError(message: string): string {

@@ -10,10 +10,12 @@ export function TopBar({
   name,
   href,
   showSignOut = true,
+  returnTo = "/accedi",
 }: {
   name: string;
   href: string;
   showSignOut?: boolean;
+  returnTo?: "/coach" | "/atleta" | "/accedi";
 }) {
   return (
     <header className="flex items-center justify-between gap-3 py-4">
@@ -24,6 +26,7 @@ export function TopBar({
         {name ? <span className="hidden max-w-40 truncate text-sm text-muted sm:inline">{name}</span> : null}
         {showSignOut ? (
           <form action={signOut}>
+            <input type="hidden" name="returnTo" value={returnTo} />
             <button
               type="submit"
               className="rounded-full px-3 py-2 text-sm font-semibold text-ink hover:bg-black/5"

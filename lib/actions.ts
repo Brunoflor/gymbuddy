@@ -6,8 +6,8 @@ import { redirect } from "next/navigation";
 import {
   athleteSignUpSchema,
   coachSignUpSchema,
-  destinationForAccount,
   membershipStatuses,
+  pathAfterEntry,
   parseCharacteristics,
   parseMeasurement,
   saveDietSchema,
@@ -62,7 +62,7 @@ async function accountDestination(supabase: Awaited<ReturnType<typeof createClie
     }
   }
 
-  return destinationForAccount({ role: role as Role, status });
+  return { role: role as Role, status };
 }
 
 export async function signIn(_previous: ActionResult | null, formData: FormData): Promise<ActionResult> {
@@ -72,6 +72,7 @@ export async function signIn(_previous: ActionResult | null, formData: FormData)
   });
   if (!parsed.success) return { ok: false, message: it.auth.invalidForm };
 
+  const door = formData.get("door") === "coach" ? "coach" : "athlete";
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) return { ok: false, message: translateAuthError(error.message) };
@@ -80,9 +81,9 @@ export async function signIn(_previous: ActionResult | null, formData: FormData)
   const userId = data?.claims?.sub;
   if (typeof userId !== "string") return { ok: false, message: it.auth.genericError };
 
-  const destination = await accountDestination(supabase, userId);
-  if (!destination) return { ok: false, message: it.auth.genericError };
-  redirect(destination);
+  const account = await accountDestination(supabase, userId);
+  if (!account) return { ok: false, message: it.auth.genericError };
+  redirect(pathAfterEntry(door, account));
 }
 
 export async function signUpCoach(
@@ -145,10 +146,12 @@ export async function signUpAthlete(
   redirect("/in-attesa");
 }
 
-export async function signOut() {
+export async function signOut(formData: FormData) {
+  const returnTo = String(formData.get("returnTo") ?? "");
+  const next = returnTo === "/coach" || returnTo === "/atleta" ? returnTo : "/accedi";
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/accedi");
+  redirect(next);
 }
 
 export async function setMembershipStatus(formData: FormData) {

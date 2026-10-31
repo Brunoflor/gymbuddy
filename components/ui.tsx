@@ -2,8 +2,15 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { it } from "@/lib/i18n/it";
 import type { MembershipStatus } from "@/lib/domain";
 
+export function WrongDoorNotice({ ingresso }: { ingresso?: string }) {
+  if (ingresso === "atleta") return <Notice>{it.auth.usedAthleteDoor}</Notice>;
+  if (ingresso === "coach") return <Notice>{it.auth.usedCoachDoor}</Notice>;
+  return null;
+}
+
 const buttonStyles = {
   primary: "bg-pine text-white hover:bg-pine/90",
+  ember: "bg-ember text-white hover:bg-ember/90",
   secondary: "border border-line bg-card text-ink hover:bg-sand",
   danger: "border border-danger/30 bg-card text-danger hover:bg-red-50",
   ghost: "text-ink hover:bg-black/5",

@@ -3,8 +3,11 @@ import {
   destinationForAccount,
   dietContentSchema,
   emptyDiet,
+  entryPathFor,
+  isPrivateAppPath,
   parseCharacteristics,
   parseMeasurement,
+  pathAfterEntry,
   translateAuthError,
   workoutContentSchema,
 } from "@/lib/domain";
@@ -18,6 +21,38 @@ describe("destinationForAccount", () => {
     expect(destinationForAccount({ role: "athlete", status: "approved" })).toBe("/atleta");
     expect(destinationForAccount({ role: "athlete", status: "rejected" })).toBe("/non-approvato");
     expect(destinationForAccount({ role: "athlete", status: null })).toBe("/in-attesa");
+  });
+});
+
+describe("pathAfterEntry", () => {
+  it("keeps a matching role on its own door", () => {
+    expect(pathAfterEntry("coach", { role: "coach", status: null })).toBe("/coach");
+    expect(pathAfterEntry("athlete", { role: "athlete", status: "approved" })).toBe("/atleta");
+    expect(pathAfterEntry("athlete", { role: "athlete", status: "pending" })).toBe("/in-attesa");
+  });
+
+  it("sends a mismatched login to the right area with an explanation flag", () => {
+    expect(pathAfterEntry("athlete", { role: "coach", status: null })).toBe("/coach?ingresso=atleta");
+    expect(pathAfterEntry("coach", { role: "athlete", status: "approved" })).toBe("/atleta?ingresso=coach");
+    expect(pathAfterEntry("coach", { role: "athlete", status: "pending" })).toBe("/in-attesa?ingresso=coach");
+    expect(pathAfterEntry("coach", { role: "athlete", status: "rejected" })).toBe(
+      "/non-approvato?ingresso=coach",
+    );
+  });
+});
+
+describe("entry paths", () => {
+  it("leaves the two doors public and protects the app behind them", () => {
+    expect(isPrivateAppPath("/coach")).toBe(false);
+    expect(isPrivateAppPath("/coach/registrati")).toBe(false);
+    expect(isPrivateAppPath("/atleta")).toBe(false);
+    expect(isPrivateAppPath("/iscriviti/BRUNO001")).toBe(false);
+    expect(isPrivateAppPath("/coach/atleti/abc")).toBe(true);
+    expect(isPrivateAppPath("/atleta/dieta")).toBe(true);
+    expect(isPrivateAppPath("/in-attesa")).toBe(true);
+    expect(entryPathFor("/coach/atleti/abc")).toBe("/coach");
+    expect(entryPathFor("/atleta/dieta")).toBe("/atleta");
+    expect(entryPathFor("/in-attesa")).toBe("/atleta");
   });
 });
 

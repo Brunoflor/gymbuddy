@@ -1,14 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { entryPathFor, isPrivateAppPath } from "@/lib/domain";
 import { supabaseEnv } from "@/lib/env";
-
-const privatePrefixes = ["/coach", "/atleta", "/in-attesa", "/non-approvato"];
-
-function isPrivatePath(pathname: string): boolean {
-  return privatePrefixes.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-  );
-}
 
 function copySession(from: NextResponse, to: NextResponse) {
   from.cookies.getAll().forEach((cookie) => {
@@ -45,9 +38,10 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const signedIn = Boolean(data?.claims?.sub);
 
-  if (!signedIn && isPrivatePath(request.nextUrl.pathname)) {
+  if (!signedIn && isPrivateAppPath(request.nextUrl.pathname)) {
     const url = request.nextUrl.clone();
-    url.pathname = "/accedi";
+    url.pathname = entryPathFor(request.nextUrl.pathname);
+    url.search = "";
     const redirectResponse = NextResponse.redirect(url);
     copySession(supabaseResponse, redirectResponse);
     return redirectResponse;

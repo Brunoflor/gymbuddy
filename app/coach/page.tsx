@@ -1,33 +1,52 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { setMembershipStatus } from "@/lib/actions";
+import { LoginForm } from "@/components/auth-forms";
 import { CopyInvite } from "@/components/copy-invite";
 import { Frame, PageIntro, TopBar } from "@/components/shell";
-import { Button, Panel, StatusBadge } from "@/components/ui";
+import { Button, Panel, StatusBadge, WrongDoorNotice } from "@/components/ui";
+import { pathAfterEntry } from "@/lib/domain";
+import { demoHintsEnabled } from "@/lib/env";
 import { it } from "@/lib/i18n/it";
 import { listRoster, type RosterEntry } from "@/lib/queries";
-import { requireCoach } from "@/lib/session";
+import { getAccount } from "@/lib/session";
 
-export const metadata: Metadata = { title: "Atleti" };
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const account = await getAccount();
+  return { title: account?.role === "coach" ? "Atleti" : it.landing.coachEntry };
+}
 
 export default async function CoachHomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ esito?: string }>;
+  searchParams: Promise<{ esito?: string; ingresso?: string }>;
 }) {
-  const account = await requireCoach();
-  const roster = await listRoster();
+  const account = await getAccount();
   const query = await searchParams;
+  if (!account) return <CoachLogin />;
+  if (account.role !== "coach") redirect(pathAfterEntry("coach", account));
+
+  const roster = await listRoster();
   const pending = roster.filter((entry) => entry.status === "pending");
   const active = roster.filter((entry) => entry.status === "approved");
   const rejected = roster.filter((entry) => entry.status === "rejected");
 
   return (
     <Frame>
-      <TopBar name={account.fullName} href="/coach" />
+      <TopBar name={account.fullName} href="/coach" returnTo="/coach" />
       <PageIntro title={it.coach.rosterTitle} lead={it.coach.rosterLead} />
+      <WrongDoorNotice ingresso={query.ingresso} />
       {account.signupCode ? <CopyInvite code={account.signupCode} /> : null}
+      <p className="mt-3 text-sm text-muted">
+        Chi ha già un account entra da{" "}
+        <Link href="/atleta" className="font-semibold text-ember">
+          {it.landing.athleteEntry.toLowerCase()}
+        </Link>
+        . I nuovi atleti usano il codice qui sopra.
+      </p>
       {query.esito === "rejected" ? <p className="mt-4 text-sm text-pine">{it.coach.rejectedDone}</p> : null}
       {query.esito === "pending" ? <p className="mt-4 text-sm text-pine">{it.coach.reopened}</p> : null}
       <section className="mt-6 space-y-3">
@@ -52,6 +71,19 @@ export default async function CoachHomePage({
           ))}
         </section>
       ) : null}
+    </Frame>
+  );
+}
+
+function CoachLogin() {
+  return (
+    <Frame>
+      <TopBar name="" href="/" showSignOut={false} />
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pine">{it.landing.coachEntry}</p>
+      <PageIntro title={it.auth.coachDoorTitle} lead={it.auth.coachDoorLead} />
+      <Panel className="border-pine/20">
+        <LoginForm door="coach" showDemo={demoHintsEnabled()} />
+      </Panel>
     </Frame>
   );
 }
